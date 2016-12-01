@@ -1,0 +1,74 @@
+buildscript {
+	ext {
+		springBootVersion = '1.4.2.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'groovy'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'war'
+apply plugin: 'checkstyle' // Configured with config/checkstyle/checkstyle.xml Docs: https://docs.gradle.org/current/userguide/checkstyle_plugin.html
+apply plugin: 'findbugs' // Static analysis Doc: https://docs.gradle.org/current/userguide/findbugs_plugin.html
+
+war {
+	baseName = 'message-board'
+	version = '0.0.1-SNAPSHOT'
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+//def testResultsDir = "build/test-results"
+
+sourceSets {
+	integrationTest {
+		groovy.srcDir file('src/integrationTest/groovy')
+		resources.srcDir file('src/integrationTest/resources')
+		compileClasspath = sourceSets.main.output + configurations.testRuntime
+		runtimeClasspath = output + compileClasspath
+	}
+}
+
+task integrationTest(type: Test) {
+	description = "Runs the integration tests."
+	group = "verification"
+	testClassesDir = sourceSets.integrationTest.output.classesDir
+	classpath = sourceSets.integrationTest.runtimeClasspath
+//	testResultsDir = file("${testResultsDir}/integration")
+}
+
+// If you wanted to make your build task run integrationTest
+//tasks.build.dependsOn(integrationTest)
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	providedRuntime
+}
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-data-jpa')
+	compile('org.springframework.boot:spring-boot-starter-jdbc')
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.codehaus.groovy:groovy')
+	runtime('com.h2database:h2')
+	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	//testCompile 'cglib:cglib-nodep:3.2.4'
+	testCompile('org.spockframework:spock-core:1.0-groovy-2.4')
+	testCompile 'org.spockframework:spock-spring:1.0-groovy-2.4'
+	testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc'
+//	testCompile 'org.mockito:mockito-core:2.2.15'
+//	testCompile 'org.mockito:mockito-core:2.2.26'
+	testCompile 'org.mockito:mockito-core:1.10.19'
+//	testCompile 'org.mockito:mockito-core:2.1.0'
+//	testCompile 'com.jayway.jsonpath:json-path:2.2.0'
+}
